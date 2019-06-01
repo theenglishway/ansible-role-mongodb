@@ -1,0 +1,18 @@
+---
+- name: Ensure mongodb server service is started
+  become: yes
+  systemd:
+    state: started
+    name: mongod
+
+- name: Add databases
+  mongodb_user:
+    login_user: "{{ mongodb_admin_user }}"
+    login_password: "{{ mongodb_admin_password }}"
+    database: "{{ item.name }}"
+    user: "{{ item.admin_user }}"
+    password: "{{ item.admin_password }}"
+    state: present
+    roles: dbOwner
+
+  loop: "{{ mongodb_databases }}"

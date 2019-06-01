@@ -1,0 +1,48 @@
+---
+- name: Add Mongo-org apt key.
+  become: yes
+  apt_key:
+    url: https://www.mongodb.org/static/pgp/server-4.0.asc
+    id: 9DA31620334BD75D9DCB49F368818C72E52529D4
+    state: present
+
+- name: Add Mongo-org repo
+  become: yes
+  apt_repository:
+    repo: deb http://repo.mongodb.org/apt/debian stretch/mongodb-org/4.0 main
+    state: present
+    filename: mongodb-org-4.0
+
+- name: Install packages {{ mongodb_packages|join(',') }}
+  become: yes
+  apt: 
+    update_cache: yes
+    name: "{{ mongodb_packages }}"
+    state: present
+
+- name: Start mongodb server service 
+  become: yes
+  systemd:
+    state: started
+    name: mongod
+
+- name: Add main user
+  become: yes
+  mongodb_user:
+    database: admin
+    name: "{{ mongodb_admin_user }}"
+    password: "{{ mongodb_admin_password }}"
+    roles: userAdminAnyDatabase
+    state: present
+
+- name: Add configuration file
+  become: yes
+  copy:
+    src: files/mongod.conf
+    dest: /etc/
+
+- name: Start mongodb server service with authentication
+  become: yes
+  systemd:
+    state: restarted
+    name: mongod

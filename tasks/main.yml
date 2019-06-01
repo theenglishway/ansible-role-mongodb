@@ -1,0 +1,10 @@
+---
+# tasks file for mongodb
+- name: Test if mongo is installed
+  shell: command -v mongo
+  register: mongo_installed
+  changed_when: false
+
+- import_tasks: install.yml
+  when: mongo_installed.rc != 0
+- import_tasks: start.yml
